@@ -73,14 +73,21 @@
 
 var popover_group = function(elms) {
 	elms.each( function(){
-		var id = $(this).data('id');
+		var link = $(this).attr('href');
+		var reg = new RegExp("http://.*?/groups/(.*)/");
+		var matchs = link.match(reg); 
+		var slug = null;
+
+		if (matchs != null)
+			slug = matchs[1];
+
 		$(this).ppypop({},function(){
 			$.ajax({
 			    url: '/wp-admin/admin-ajax.php',
 			    type: 'post',
 			    data: {
 			        'action': 'get_group',
-			        'group_id': id
+			        'group_slug': slug
 			    },
 			    success: function(dataObj) {
 			    	data = $.parseJSON(dataObj);
@@ -90,11 +97,11 @@ var popover_group = function(elms) {
 					if (data.is_user_member == 1) {
 						btn = '<a title="Leave Group" class="btn">Leave Group</a>';
 					} else {
-						if ( !data.user_is_login ) {
-							btn = '<a title="Join Group" class="btn" href="#login-popup" data-toggle="modal">Join Group</a>';
-						} else {
-							btn = '<a title="Join Group" class="btn" onclick="do_group_join_modal(' + data.id + ')">Join Group</a>';
-						}
+					//	if ( !data.user_is_login ) {
+					//		btn = '<a title="Join Group" class="btn" href="#login-popup" data-toggle="modal">Join Group</a>';
+					//	} else {
+					//		btn = '<a title="Join Group" class="btn" onclick="do_group_join_modal(' + data.id + ')">Join Group</a>';
+					//	}
 						
 					}
 			        content += '<div class="pop-inner pop-group">\
@@ -125,7 +132,7 @@ var popover_group = function(elms) {
 				content += '</ul>\
 								</div>\
 							</div>\
-							<div class="pull-right" id="groupbutton-' + id + '">\
+							<div class="pull-right" id="groupbutton-' + slug + '">\
 								<br><br>\
 								' + btn  + ' \
 							</div>\

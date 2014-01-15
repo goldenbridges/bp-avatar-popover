@@ -60,7 +60,8 @@ add_action( 'bp_after_group_home_content', 'bpap_enqueue_scripts_popover' );
 function bpap_group_ajax_get() {
 	global $current_user;
 	
-	$group_id = 137;//$_POST['group_id'];
+	$group_slug = $_POST['group_slug'];
+	$group_id = groups_get_id( $group_slug );
 	
 	$group = groups_get_group( array( 'group_id' => $group_id ) );
 	
