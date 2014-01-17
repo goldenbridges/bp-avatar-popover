@@ -1,14 +1,11 @@
 <?php
 /*
 Plugin Name: BuddyPress Avatar Popover
-Plugin URI: http://premium.wpmudev.org/project/media-embeds-for-buddypress-activity
-Description: A Facebook-style media sharing improvement for the activity box.
-Version: 1.5
-Author: Ve Bailovity (Incsub), designed by Brett Sirianni (The Edge)
-Author URI: http://premium.wpmudev.org
-WDP ID: 232
-
-Copyright 2009-2011 Incsub (http://incsub.com)
+Plugin URI: https://github.com/goldenbridges/bp-avatar-popover/
+Description: Adds a popover box when hovering on the group/member avatars and gives you more information at a glance.
+Version: 0.1.0
+Author: The Golden Bridges Foundation
+Author URI: http://github.com/goldenbridges/
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License (Version 2 - GPLv2) as published by
@@ -23,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+if ( !defined( 'BPAP_PLUGIN_VERSION' ) )
+	define( 'BPAP_PLUGIN_VERSION', '0.1.0' );
 
 if ( !defined( 'BPAP_PLUGIN_DIRNAME' ) )
 	define( 'BPAP_PLUGIN_DIRNAME', basename( dirname( __FILE__ ) ) );
@@ -41,10 +40,10 @@ if ( !defined( 'BPAP_PLUGIN_URL' ) ) {
  * @author Bourne
  */
 function bpap_enqueue_scripts_popover() {
-	wp_enqueue_script( 'bpap-ppover', BPAP_PLUGIN_URL . 'js/bpap-popover.js' );
+	wp_enqueue_style( 'bpap-ppover', BPAP_PLUGIN_URL . 'css/bpap-popover.css', $dep = array(), $version = BPAP_PLUGIN_VERSION );
+	wp_enqueue_script( 'bpap-ppover', BPAP_PLUGIN_URL . 'js/bpap-popover.js', $dep = array(), $version = BPAP_PLUGIN_VERSION );
 	// Store current logged in member ID in the js
 	wp_localize_script( 'bpap-member', '_member', array( 'id' => bp_loggedin_user_id() ) );
-	wp_enqueue_style( 'bpap-ppover', BPAP_PLUGIN_URL . 'css/bpap-popover.css' );	
 }
 add_action( 'bp_after_member_home_content', 'bpap_enqueue_scripts_popover' );
 add_action( 'bp_after_directory_members', 'bpap_enqueue_scripts_popover' );
