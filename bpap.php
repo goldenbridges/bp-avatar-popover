@@ -44,7 +44,7 @@ function bpap_enqueue_scripts_popover() {
 	wp_enqueue_script( 'bpap-ppover', BPAP_PLUGIN_URL . 'js/bpap-popover.js' );
 	// Store current logged in member ID in the js
 	wp_localize_script( 'bpap-member', '_member', array( 'id' => bp_loggedin_user_id() ) );
-	
+	wp_enqueue_style( 'bpap-ppover', BPAP_PLUGIN_URL . 'css/bpap-popover.css' );	
 }
 add_action( 'bp_after_member_home_content', 'bpap_enqueue_scripts_popover' );
 add_action( 'bp_after_directory_members', 'bpap_enqueue_scripts_popover' );

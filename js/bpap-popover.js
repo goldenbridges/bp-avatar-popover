@@ -110,8 +110,8 @@ var popover_group = function(elms) {
 							<div class="media-body">\
 								<h5 class="media-heading"><a class="link-blue" title="'+data.name+'" href="/groups/'+data.slug+'/">'+data.name+'</a></h5>\
 								<small class="muted">HQ: ' + data.city_name + ' &nbsp; | &nbsp; ' + data.total_member_count + ' Members</small>\
-								<div class="intor"><p>'+data.description+'</p></div>\
 							</div>\
+							<div class="intor"><p>'+data.description+'</p></div>\
 						</div>\
 						<div class="clearfix">\
 							<div class="box box-hh pull-left">\
@@ -133,7 +133,6 @@ var popover_group = function(elms) {
 								</div>\
 							</div>\
 							<div class="pull-right" id="groupbutton-' + slug + '">\
-								<br><br>\
 								' + btn  + ' \
 							</div>\
 						</div>\
