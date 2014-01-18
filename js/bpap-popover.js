@@ -71,8 +71,17 @@
 
 })(jQuery);
 
-var popover_group = function(elms) {
-	elms.each( function(){
+/**
+ * PPY popover
+ *
+ * @time 2013-04-30
+ * @author Lujun
+ */
+
+//console.log(_member.id);
+
+(function($){
+	$("#groups-list .item-avatar a").each( function() {
 		var link = $(this).attr('href');
 		var reg = new RegExp("http://.*?/groups/(.*)/");
 		var matchs = link.match(reg); 
@@ -97,18 +106,6 @@ var popover_group = function(elms) {
 			});
 		})
 	});
-};
-
-/**
- * PPY popover
- *
- * @time 2013-04-30
- * @author Lujun
- */
-
-//console.log(_member.id);
-
-(function($){
 	$("#members-list .item-avatar a").each( function() {
 		var link = $(this).attr('href');
 		var reg = new RegExp("http://.*?/members/(.*)/");
@@ -141,5 +138,4 @@ var popover_group = function(elms) {
 			});
 		}
 	});
-
 })(jQuery);
