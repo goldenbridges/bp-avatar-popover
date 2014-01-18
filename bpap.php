@@ -43,22 +43,22 @@ function bpap_enqueue_scripts_popover() {
 	wp_enqueue_style( 'bpap-ppover', BPAP_PLUGIN_URL . 'css/bpap-popover.css', $dep = array(), $version = BPAP_PLUGIN_VERSION );
 	wp_enqueue_script( 'bpap-ppover', BPAP_PLUGIN_URL . 'js/bpap-popover.js', $dep = array(), $version = BPAP_PLUGIN_VERSION );
 	// Store current logged in member ID in the js
-	wp_localize_script( 'bpap-member', '_member', array( 'id' => bp_loggedin_user_id() ) );
+	$user = get_userdata( bp_loggedin_user_id() );
+	wp_localize_script( 'bpap-ppover', '_member', array( 'name' => $user->user_login ) );
 }
 add_action( 'bp_after_member_home_content', 'bpap_enqueue_scripts_popover' );
-add_action( 'bp_after_directory_members', 'bpap_enqueue_scripts_popover' );
 add_action( 'bp_after_member_home_content', 'bpap_enqueue_scripts_popover' );
+add_action( 'bp_after_directory_members', 'bpap_enqueue_scripts_popover' );
+add_action( 'bp_after_members_loop', 'bpap_enqueue_scripts_popover' );
 add_action( 'bp_after_directory_groups_page', 'bpap_enqueue_scripts_popover' );
 add_action( 'bp_after_group_home_content', 'bpap_enqueue_scripts_popover' );
 
 /**
- * ajax get group
+ * get group popoverbox with ajax
  *
  * @author Bourne
  */
-function bpap_group_ajax_get() {
-	global $current_user;
-	
+function bpap_group_ajax_get_group_popover_box() {
 	$group_slug = $_POST['group_slug'];
 	$group_id = groups_get_id( $group_slug );
 	
@@ -72,33 +72,97 @@ function bpap_group_ajax_get() {
 		'height' => 90,
 		'html' => false
 		);
-	
-	$group->avatar = bp_core_fetch_avatar( $avatar_options );
-	
-	$group->description = substr( $group->description, 0, 140 ) . ' ...';
-	
-	$group->is_user_member = groups_is_user_member( $current_user->ID, $group_id );
-	
-	$group->user_is_login = is_user_logged_in();
-	
-	$avatar_options['object'] = 'member';
-	
-	foreach( $group->admins as $member ) {
-		$avatar_options['item_id'] = $member->user_id;
-		
-		$avatar_options = array ( 
-			'item_id' => $member->user_id,
-			'object' => 'member',
-			'type' => 'full',
-			'width' => 50,
-			'height' => 50,
-			'html' => false
-			);
-		
-		$member->avatar = bp_core_fetch_avatar( $avatar_options );
-	}
-	
-	wp_die( json_encode( $group ) );
+?>
+<div class="pop-inner pop-group">
+						<div class="media">
+							<div class="pull-left"><a class="thumbnail" href="<?php echo bp_group_permalink( $group );?>"><img src="<?php echo bp_core_fetch_avatar( $avatar_options );?>" width="90" height="90"></a></div>
+							<div class="media-body">
+								<h5 class="media-heading"><a class="link-blue" title="<?php echo $group->name;?>" href="<?php echo bp_group_permalink( $group );?>"><?php echo $group->name;?></a></h5>
+								<small class="muted"><?php echo $group->total_member_count;?> Members</small>
+							</div>
+							<div class="intor"><p><?php echo substr( $group->description, 0, 240 );?>...</p></div>
+						</div>
+						<div class="clearfix">
+							<div class="box box-hh pull-left">
+								<div class="hd">
+									<h5 class="muted">Group Admins</h5>
+								</div>
+								<div class="bd">
+									<ul class="thumbnails list-thumb">
+<?php 
+				$avatar_options['object'] = 'member';
+				$avatar_options['width'] = 50;
+				$avatar_options['height'] = 50;
+				foreach( $group->admins as $member ) :
+					$avatar_options['item_id'] = $member->user_id;
+?>
+									<li>
+										<a href="<?php echo bp_core_get_user_domain( $member->user_id );?>" class="thumbnail">
+						                  <img src="<?php echo bp_core_fetch_avatar( $avatar_options );?>" width="50" height="50">
+						                </a>
+									</li>
+<?php endforeach;?>
+				</ul>
+								</div>
+							</div>
+							<?php if ( is_user_logged_in() ) : ?>
+							<div class="pull-right group-button" id="groupbutton-<?php echo $group_id;?>">
+								<?php if ( groups_is_user_member( bp_loggedin_user_id(), $group_id ) ) : ?>
+								<a title="Leave Group" class="Leave Group" href="<?php echo wp_nonce_url( bp_get_group_permalink( $group ) . 'leave-group', 'groups_leave_group' );?>">Leave Group</a>
+								<?php else: ?>
+								<a title="Join Group" class="group-button join-group" href="<?php echo wp_nonce_url( bp_get_group_permalink( $group ) . 'join', 'groups_join_group' );?>">Join Group</a>
+								<?php endif;?>
+							</div>
+							<?php endif;?>
+						</div>
+					</div>
+<?php
+	wp_die();
 }
-add_action ('wp_ajax_get_group', 'bpap_group_ajax_get');
-add_action( 'wp_ajax_nopriv_get_group', 'bpap_group_ajax_get' );
+add_action ('wp_ajax_get_group_popover_box', 'bpap_group_ajax_get_group_popover_box');
+add_action( 'wp_ajax_nopriv_get_group_popover_box', 'bpap_group_ajax_get_group_popover_box' );
+
+
+/**
+ * get member popoverbox with ajax
+ *
+ * @author Bourne
+ */
+function ppy_profile_ajax_get_member_popover_box() {
+	$name = $_POST['name'];
+	
+	$user_id = bp_core_get_userid( $name );
+	$avatar_options = array ( 'item_id' => $user_id, 'object' => 'member', 'type' => 'full', 'width' => 90, 'height' => 90, 'html' => false );
+	$groups = groups_get_groups( array( 'user_id' =>  $user_id, 'per_page' => 1 ) );
+	$group = $groups['groups'][0];
+?>
+<div class="pop-inner pop-member">
+	<div class="media">
+		<div class="pull-left"><a class="thumbnail" href=""><img src="<?php echo bp_core_fetch_avatar( $avatar_options );?>"></a></div>
+		<div class="media-body">
+			<h5 class="media-heading"><a class="link-blue" href="<?php echo bp_core_get_user_domain( $user_id );?>"><?php echo bp_core_get_user_displayname( $user_id );?></a></h5>
+			<p class="muted"><a class="link-blue" title="" href="<?php echo bp_group_permalink( $group );?>"><?php echo $group->name;?></a></p>
+		</div>
+	</div>
+	<ul class="unstyled list-pop-member">
+		<li class="friendship-button">
+<?php
+	$friendship_status = BP_Friends_Friendship::check_is_friend( bp_loggedin_user_id(), $user_id );
+	
+	if ( $friendship_status == 'is_friend') : ?>
+		<a id="friend-<?php echo $user_id;?>" rel="add" class="btn btn-mini btn-block friend_link" href="<?php echo wp_nonce_url( bp_loggedin_user_domain() . bp_get_friends_slug() . '/remove-friend/' . $user_id . '/', 'friends_remove_friend' );?>" title="Remove Pengyou"><i class="icon-minus"></i> Remove Pengyou</a>
+	<?php elseif ( $friendship_status == 'not_friends') : ?>
+		<a id="friend-<?php echo $user_id;?>" rel="remove" class="btn btn-mini btn-block btn-danger friend_link" href="<?php echo wp_nonce_url( bp_loggedin_user_domain() . bp_get_friends_slug() . '/add-friend/' . $user_id . '/', 'friends_add_friend' );?>" title="Add Pengyou"><i class="icon-plus icon-white"></i> Add Pengyou</a>
+	<?php elseif ( $friendship_status == 'pending') :?>
+		<a id="friend-<?php echo $user_id;?>" rel="add" class="btn btn-mini btn-block friend_link" href="<?php echo wp_nonce_url( bp_loggedin_user_domain() . bp_get_friends_slug() . '/requests/cancel/' . $user_id . '/', 'friends_withdraw_friendship' );?>" title="Cancel Friendship Request"><i class="icon-minus"></i> Cancel Request</a>
+	<?php endif;?>
+		</li>
+		
+		<li><a class="btn btn-mini btn-block" href="<?php echo wp_nonce_url( bp_loggedin_user_domain() . bp_get_messages_slug() . '/compose/?r=' . bp_core_get_username( $user_id ) );?>"><i class="icon-envelope"></i> Send Message</a></li>
+	</ul>
+</div>
+<?php
+	wp_die( );
+}
+add_action ('wp_ajax_get_member_popover_box', 'ppy_profile_ajax_get_member_popover_box');
+add_action( 'wp_ajax_nopriv_get_member_popover_box', 'ppy_profile_ajax_get_member_popover_box' );
