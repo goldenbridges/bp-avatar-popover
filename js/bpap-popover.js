@@ -1,5 +1,5 @@
 /**
- * PPY popover
+ * popover
  *
  * @time 2013-04-30
  * @author Lujun
@@ -8,7 +8,7 @@
 ; (function($) {
     'use strict';
 
-    $.fn.ppypop = function(opts, callback) {
+    $.fn.popover = function(opts, callback) {
         var defaults = {
             times: 500
         };
@@ -16,7 +16,7 @@
         defaults, opts),
         el = $(this),
         timer,
-        container = $('<div id="ppypop" class="ppy-pop"><div class="popover right"><div class="arrow"></div><div class="popover-content"><div class="load"><span class="loader loader-large"></span> Loading...</div></div></div></div>'),
+        container = $('<div id="popover"><div class="popover right"><div class="arrow"></div><div class="popover-content"><div class="load"><span class="loader loader-large"></span> Loading...</div></div></div></div>'),
         showpop = function() {
             if (timer) {
                 clearTimeout(timer);
@@ -72,7 +72,7 @@
 })(jQuery);
 
 /**
- * PPY popover
+ * popover
  *
  * @time 2013-04-30
  * @author Lujun
@@ -90,7 +90,7 @@
 		if (matchs != null)
 			slug = matchs[1];
 
-		$(this).ppypop({},function(){
+		$(this).popover({},function(){
 			$.ajax({
 			    url: '/wp-admin/admin-ajax.php',
 			    type: 'post',
@@ -99,7 +99,7 @@
 			        'group_slug': slug
 			    },
 			    success: function(response) {
-					$('#ppypop').find('.popover-content').html(response);
+					$('#popover').find('.popover-content').html(response);
 			    },
 			    error: function(data) {
 			    }
@@ -121,7 +121,7 @@
 		//		title: 'This is you'
 		//	});
 		} else {
-			$(this).ppypop({},function(){
+			$(this).popover({},function(){
 				$.ajax({
 				    url: '/wp-admin/admin-ajax.php',
 				    type: 'post',
@@ -130,7 +130,7 @@
 				        'name': name
 				    },
 				    success: function(response) {
-						$('#ppypop').find('.popover-content').html(response);
+						$('#popover').find('.popover-content').html(response);
 				    },
 				    error: function(data) {
 				    }

@@ -40,10 +40,12 @@ if ( !defined( 'BPAP_PLUGIN_URL' ) ) {
  * @author Bourne
  */
 function bpap_enqueue_scripts_popover() {
+	$user = wp_get_current_user();
+	
 	wp_enqueue_style( 'bpap-ppover', BPAP_PLUGIN_URL . 'css/bpap-popover.css', $dep = array(), $version = BPAP_PLUGIN_VERSION );
 	wp_enqueue_script( 'bpap-ppover', BPAP_PLUGIN_URL . 'js/bpap-popover.js', $dep = array(), $version = BPAP_PLUGIN_VERSION );
 	// Store current logged in member ID in the js
-	$user = get_userdata( bp_loggedin_user_id() );
+	$user = get_userdata( $user->ID );
 	wp_localize_script( 'bpap-ppover', '_member', array( 'name' => $user->user_login ) );
 }
 add_action( 'bp_after_member_home_content', 'bpap_enqueue_scripts_popover' );
@@ -61,6 +63,7 @@ add_action( 'bp_after_group_home_content', 'bpap_enqueue_scripts_popover' );
 function bpap_group_ajax_get_group_popover_box() {
 	$group_slug = $_POST['group_slug'];
 	$group_id = groups_get_id( $group_slug );
+	$user = wp_get_current_user();
 	
 	$group = groups_get_group( array( 'group_id' => $group_id ) );
 	
@@ -107,7 +110,7 @@ function bpap_group_ajax_get_group_popover_box() {
 							</div>
 							<?php if ( is_user_logged_in() ) : ?>
 							<div class="pull-right group-button" id="groupbutton-<?php echo $group_id;?>">
-								<?php if ( groups_is_user_member( bp_loggedin_user_id(), $group_id ) ) : ?>
+								<?php if ( groups_is_user_member( $user->ID, $group_id ) ) : ?>
 								<a title="Leave Group" class="Leave Group" href="<?php echo wp_nonce_url( bp_get_group_permalink( $group ) . 'leave-group', 'groups_leave_group' );?>">Leave Group</a>
 								<?php else: ?>
 								<a title="Join Group" class="group-button join-group" href="<?php echo wp_nonce_url( bp_get_group_permalink( $group ) . 'join', 'groups_join_group' );?>">Join Group</a>
