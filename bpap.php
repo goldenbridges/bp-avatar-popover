@@ -46,7 +46,7 @@ function bpap_enqueue_scripts_popover() {
 	wp_enqueue_script( 'bpap-ppover', BPAP_PLUGIN_URL . 'js/bpap-popover.js', $dep = array(), $version = BPAP_PLUGIN_VERSION );
 	// Store current logged in member ID in the js
 	$user = get_userdata( $user->ID );
-	wp_localize_script( 'bpap-ppover', '_member', array( 'name' => $user->user_login ) );
+	wp_localize_script( 'bpap-ppover', '_member', array( 'id' => $user->ID ) );
 }
 add_action( 'bp_after_member_home_content', 'bpap_enqueue_scripts_popover' );
 add_action( 'bp_after_member_home_content', 'bpap_enqueue_scripts_popover' );
@@ -72,13 +72,12 @@ function bpap_group_ajax_get_group_popover_box() {
 		'object' => 'group',
 		'type' => 'full',
 		'width' => 90,
-		'height' => 90,
-		'html' => false
+		'height' => 90
 		);
 ?>
 <div class="pop-inner pop-group">
 						<div class="media">
-							<div class="pull-left"><a class="thumbnail" href="<?php echo bp_group_permalink( $group );?>"><img src="<?php echo bp_core_fetch_avatar( $avatar_options );?>" width="90" height="90"></a></div>
+							<div class="pull-left"><a class="thumbnail" href="<?php echo bp_group_permalink( $group );?>"><?php echo bpap_core_fetch_avatar( $avatar_options );?></a></div>
 							<div class="media-body">
 								<h5 class="media-heading"><a class="link-blue" title="<?php echo $group->name;?>" href="<?php echo bp_group_permalink( $group );?>"><?php echo $group->name;?></a></h5>
 								<small class="muted"><?php echo $group->total_member_count;?> Members</small>
@@ -101,7 +100,7 @@ function bpap_group_ajax_get_group_popover_box() {
 ?>
 									<li>
 										<a href="<?php echo bp_core_get_user_domain( $member->user_id );?>" class="thumbnail">
-						                  <img src="<?php echo bp_core_fetch_avatar( $avatar_options );?>" width="50" height="50">
+						                  <?php echo bpap_core_fetch_avatar( $avatar_options );?>
 						                </a>
 									</li>
 <?php endforeach;?>
@@ -131,22 +130,25 @@ add_action( 'wp_ajax_nopriv_get_group_popover_box', 'bpap_group_ajax_get_group_p
  *
  * @author Bourne
  */
-function ppy_profile_ajax_get_member_popover_box() {
-	$name = $_POST['name'];
+function bpap_ajax_get_member_popover_box() {
+	$user_id = $_POST['id'];
 	
-	$user_id = bp_core_get_userid( $name );
-	$avatar_options = array ( 'item_id' => $user_id, 'object' => 'member', 'type' => 'full', 'width' => 90, 'height' => 90, 'html' => false );
-	$groups = groups_get_groups( array( 'user_id' =>  $user_id, 'per_page' => 1 ) );
-	$group = $groups['groups'][0];
+	$avatar_options = array ( 'item_id' => $user_id, 'object' => 'member', 'type' => 'full', 'width' => 90, 'height' => 90 );
 ?>
 <div class="pop-inner pop-member">
 	<div class="media">
-		<div class="pull-left"><a class="thumbnail" href=""><img src="<?php echo bp_core_fetch_avatar( $avatar_options );?>"></a></div>
+		<div class="pull-left"><a class="thumbnail" href=""><?php echo bpap_core_fetch_avatar( $avatar_options );?></a></div>
 		<div class="media-body">
-			<h5 class="media-heading"><a class="link-blue" href="<?php echo bp_core_get_user_domain( $user_id );?>"><?php echo bp_core_get_user_displayname( $user_id );?></a></h5>
+			<h5 class="media-heading"><a class="link-blue" href="<?php echo bp_core_get_user_domain( $user_id );?>"><?php echo bpap_core_get_user_displayname( $user_id );?></a></h5>
+			<?php if ( is_plugin_active( 'buddypress/bp-loader.php' ) ) : 
+				$groups = groups_get_groups( array( 'user_id' =>  $user_id, 'per_page' => 1 ) );
+				$group = $groups['groups'][0];
+			?>
 			<p class="muted"><a class="link-blue" title="" href="<?php echo bp_group_permalink( $group );?>"><?php echo $group->name;?></a></p>
+			<?php endif;?>
 		</div>
 	</div>
+	<?php if ( is_plugin_active( 'buddypress/bp-loader.php' ) ) :?>
 	<ul class="unstyled list-pop-member">
 		<li class="friendship-button">
 <?php
@@ -163,9 +165,34 @@ function ppy_profile_ajax_get_member_popover_box() {
 		
 		<li><a class="btn btn-mini btn-block" href="<?php echo wp_nonce_url( bp_loggedin_user_domain() . bp_get_messages_slug() . '/compose/?r=' . bp_core_get_username( $user_id ) );?>"><i class="icon-envelope"></i> Send Message</a></li>
 	</ul>
+	<?php endif; ?>
 </div>
 <?php
 	wp_die( );
 }
-add_action ('wp_ajax_get_member_popover_box', 'ppy_profile_ajax_get_member_popover_box');
-add_action( 'wp_ajax_nopriv_get_member_popover_box', 'ppy_profile_ajax_get_member_popover_box' );
+add_action ('wp_ajax_get_member_popover_box', 'bpap_ajax_get_member_popover_box');
+add_action( 'wp_ajax_nopriv_get_member_popover_box', 'bpap_ajax_get_member_popover_box' );
+
+/**
+ * Get an avatar
+ * @author Bourne
+ */
+function bpap_core_fetch_avatar( $args = '' ) {
+	if ( is_plugin_active( 'buddypress/bp-loader.php' ) ) 
+		return bp_core_fetch_avatar( $args );
+	
+	extract( $args );
+	return get_avatar( $item_id, $width, '', '' );
+}
+
+/**
+ * Get an user displayname
+ * @author Bourne
+ */
+function bpap_core_get_user_displayname( $user_id ) {
+	if ( is_plugin_active( 'buddypress/bp-loader.php' ) ) 
+		return bp_core_get_user_displayname( $user_id );
+
+	$user_info = get_userdata( $user_id );
+	return $user_info->user_nicename;
+}

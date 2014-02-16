@@ -106,16 +106,23 @@
 			});
 		})
 	});
-	$("#members-list .item-avatar a").each( function() {
-		var link = $(this).attr('href');
-		var reg = new RegExp("http://.*?/members/(.*)/");
-		var matchs = link.match(reg); 
-		var name = null;
+	$("#members-list .item-avatar img, .comment-author img").each( function() {
+		//var link = $(this).attr('href');
+		//var reg = new RegExp("http://.*?/members/(.*)/");
+		//var matchs = link.match(reg); 
+		//var name = null;
+
+		//if (matchs != null)
+		//	name = matchs[1];
+		var clazz = $(this).attr('class');
+		var reg = new RegExp("user-(.*)-avatar");
+		var matchs = clazz.match(reg);
+		var id = -1;
 
 		if (matchs != null)
-			name = matchs[1];
+			id = matchs[1];
 
-		if ( name == _member.name ){
+		if ( id == _member.id ){
 		//	$(this).tooltip({
 		//		placement: 'top',
 		//		title: 'This is you'
@@ -127,7 +134,7 @@
 				    type: 'post',
 				    data: {
 				        'action': 'get_member_popover_box',
-				        'name': name
+				        'id': id
 				    },
 				    success: function(response) {
 						$('#popover').find('.popover-content').html(response);
